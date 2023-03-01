@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\DTO\LowestPriceEnquiry;
+use App\Filter\PromotionsFilterInterface;
 use App\Service\Serializer\DTOSerializer;
 use PHPUnit\Util\Json;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,7 +16,12 @@ class ProductsController extends AbstractController
 {
 
   #[Route('/products/{id}/lowest-price', name: 'lowest-price', methods: 'POST')]
-  public function lowestPractice(int $id, Request $request, DTOSerializer $serializer): Response
+  public function lowestPractice(
+    Request $request,
+    int $id,
+    DTOSerializer $serializer,
+    PromotionsFilterInterface $promotionsFilter
+  ): Response
   {
 
     if ($request->headers->has('force_fail')) {
@@ -30,12 +36,11 @@ class ProductsController extends AbstractController
     $lowestPriceEnquiry = $serializer->deserialize($request->getContent(), LowestPriceEnquiry::class, 'json');
 
 
-    $lowestPriceEnquiry->setDiscountedPrice(50);
-    $lowestPriceEnquiry->setPrice(110);
-    $lowestPriceEnquiry->setPromotionId(2);
-    $lowestPriceEnquiry->setPromotionName("Black Friday half price promo");
+    $modifiedEnquiry = $promotionsFilter->apply($lowestPriceEnquiry);
 
-    $responseContent = $serializer->serialize($lowestPriceEnquiry, 'json');
+
+
+    $responseContent = $serializer->serialize($modifiedEnquiry, 'json');
     return new Response($responseContent, 200);
 
   }
