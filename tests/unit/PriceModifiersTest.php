@@ -5,6 +5,7 @@ namespace App\Tests\unit;
 use App\DTO\LowestPriceEnquiry;
 use App\Entity\Promotion;
 use App\Filter\Modifier\DateRangeMultiplier;
+use App\Filter\Modifier\EvenQtyPriceModifier;
 use App\Filter\Modifier\FixedPriceVoucher;
 use App\Tests\ServiceTestCase;
 
@@ -51,4 +52,26 @@ class PriceModifiersTest extends ServiceTestCase
 
     $this->assertEquals(1000, $modifiedFixedPrice);
   }
+
+  /** @test  */
+  public function checkIfEvenNumberOfItemsPromoAppliedCorrectly()
+  {
+    $enquiry = new LowestPriceEnquiry();
+//    $enquiry->setPrice(200);
+    $enquiry->setQuantity(2);
+
+
+    $promo = new Promotion();
+    $promo->setName("Two in price of one promo");
+    $promo->setAdjustment(0.5);
+    $promo->setCriteria(['min_qty' => 2]);
+    $promo->setType('even_qty_half_price_promo');
+
+    $evenPriceModifier = new EvenQtyPriceModifier();
+    $modifiedIfEvenQtyPrice = $evenPriceModifier->modify(100, 5, $promo, $enquiry);
+
+    $this->assertEquals(300, $modifiedIfEvenQtyPrice);
+  }
+
+
 }
