@@ -73,5 +73,23 @@ class PriceModifiersTest extends ServiceTestCase
     $this->assertEquals(300, $modifiedIfEvenQtyPrice);
   }
 
+  /** @test  */
+  public function checkIfSecondItemIsHalfPrice()
+  {
+    $enquiry = new LowestPriceEnquiry();
+//    $enquiry->setPrice(200);
+    $enquiry->setQuantity(2);
 
+
+    $promo = new Promotion();
+    $promo->setName("Second product half price");
+    $promo->setAdjustment(0.75);
+    $promo->setCriteria(['min_qty' => 2]);
+    $promo->setType('second_item_half_price_promo');
+
+    $evenPriceModifier = new EvenQtyPriceModifier();
+    $modifiedIfEvenQtyPrice = $evenPriceModifier->modify(100, 5, $promo, $enquiry);
+
+    $this->assertEquals(400, $modifiedIfEvenQtyPrice);
+  }
 }
